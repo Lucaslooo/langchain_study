@@ -17,17 +17,19 @@ llm = init_chat_model(
     base_url=os.getenv("BASE_URL")
 )
 
+
 class Animal(TypedDict):
-    animal: Annotated[str,"动物"]
-    emoji: Annotated[str,"表情"]
+    animal: Annotated[str, "动物"]
+    emoji: Annotated[str, "表情"]
+
 
 class AnimalList(TypedDict):
-    animals: Annotated[list[Animal],"动物列表"]
+    animals: Annotated[list[Animal], "动物列表"]
 
 
 chat_prompt_template = ChatPromptTemplate.from_messages(
     [
-        ("human","{input}")
+        ("human", "{input}")
     ]
 )
 
