@@ -1,6 +1,6 @@
 import os
 
-import redis
+import redis #导入原生redis库，pip install redis==5.3.1
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_community.chat_message_histories import RedisChatMessageHistory
@@ -11,6 +11,7 @@ from loguru import logger
 
 load_dotenv()
 redis_url = os.getenv('REDIS_URL')
+# 创建原生Redis客户端,decode_responses 控制 Redis 返回数据的类型：False 返字节串，True 返字符串
 redis_client = redis.Redis.from_url(redis_url, decode_responses=True)
 
 llm = init_chat_model(
@@ -29,8 +30,9 @@ chat_prompt = ChatPromptTemplate.from_messages(
 
 parser = StrOutputParser()
 
-
+#获取或创建会话历史（使用 Redis）
 def get_session_history(session_id: str) -> RedisChatMessageHistory:
+    # 创建 Redis 历史对象
     history = RedisChatMessageHistory(
         session_id=session_id,
         url=redis_url
@@ -38,14 +40,15 @@ def get_session_history(session_id: str) -> RedisChatMessageHistory:
     )
     return history
 
-
+# 创建带历史的链
 history_chain = RunnableWithMessageHistory(
     chat_prompt | llm | parser,
     get_session_history,
     input_messages_key="question",
     history_messages_key="history"
 )
-
+# 配置
+# session_id 就是登录大模型的各自帐户，类似登录手机号码，各不相同
 config = RunnableConfig(configurable={"session_id": "user-001"})
 
 # 主循环
